@@ -23,7 +23,6 @@ class Server:
         self.clients =[]
         self.socket_UDP = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
         self.socket_UDP.setsockopt(socket.SOL_SOCKET,socket.SO_BROADCAST,1)
-        # self.socket_UDP.bind((self.IP,self.UDP_PORT))
         self.socket_TCP = socket.socket(socket.AF_INET,socket.SOCK_STREAM)
         self.socket_TCP.setsockopt(socket.SOL_SOCKET,socket.SO_REUSEADDR,1)
         self.socket_TCP.settimeout(0.1)
@@ -42,7 +41,6 @@ class Server:
     #recieve message from tcp
     def get_message_from_TCP(self, count_group_a,count_group_b):
         self.is_receive_message = True
-       
         for socket_1 in count_group_a:
             while self.is_receive_message:
                 mas = socket_1.recv(1024)
@@ -54,7 +52,6 @@ class Server:
                 mas_2 = socket_2.recv(1024)
                 count_group_b[socket_2] += 1
             threading.Thread(target=mas, args=(socket_2, count_group_b)).start()
-        
         sleep(10)
         self.is_receive_message = False
 
@@ -65,7 +62,7 @@ class Server:
                 client_thread = threading.Thread(target=self.get_name_of_team, args=(client_socket,client_address))
                 client_thread.start()
         except:
-            print("דserver time out")
+            print("server time out")
 
     #get teams name from client
     def get_name_of_team(self,client_socket,client_address):
@@ -77,13 +74,14 @@ class Server:
 
     #message start game
     def start_game(self,group_a,group_b):
-        message = Fore.CYAN+"Welcome to Keyboard Spamming Battle Royale.\n" +Fore.BLUE+"Group 1:\n"+ "==\n"    
-        for t in group_a:
-            message = message + t[2]      
+        message = Fore.CYAN+"Welcome to Keyboard Spamming Battle Royale.\n"
+        message+=+Fore.BLUE+"Group 1:\n"+ "==\n"    
+        for a in group_a:
+            message = message + a[2]      
         message = message +Fore.MAGENTA+"Group 2:\n"
         message+=Fore.MAGENTA+"==\n"
-        for t in group_b:
-            message = message + t[2]  
+        for b in group_b:
+            message = message + b[2]  
         message = message +Fore.CYAN+"Start pressing keys on your keyboard as fast as you can!!"  
         return message
 
