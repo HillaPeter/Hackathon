@@ -33,25 +33,31 @@ class Server:
     def send_message_from_UDP(self):
         print(Style.RESET_ALL+"Server started, listening on IP address",self.IP)
         self.udp_is_sending_message=True
-        for i in range(10):
-            self.socket_UDP.sendto(struct.pack('IbH', self.MAGIC_COOKIE, self.TYPE, self.server_port), ('<broadcast>', self.UDP_PORT))
-            sleep(1)
+        try:
+            for i in range(10):
+                self.socket_UDP.sendto(struct.pack('IbH', self.MAGIC_COOKIE, self.TYPE, self.server_port), ('<broadcast>', self.UDP_PORT))
+                sleep(1)
+        except:
+            print("cant connect to UDP")
         self.udp_is_sending_message=False
 
     #recieve message from tcp
     def get_message_from_TCP(self, count_group_a,count_group_b):
         self.is_receive_message = True
-        for socket_1 in count_group_a:
-            while self.is_receive_message:
-                mas = socket_1.recv(1024)
-                count_group_a[socket_1] += 1
-            threading.Thread(target=mas, args=(socket_1, count_group_a)).start()
+        try:
+            for socket_1 in count_group_a:
+                while self.is_receive_message:
+                    mas = socket_1.recv(1024)
+                    count_group_a[socket_1] += 1
+                threading.Thread(target=mas, args=(socket_1, count_group_a)).start()
 
-        for socket_2 in count_group_b:
-            while self.is_receive_message:
-                mas_2 = socket_2.recv(1024)
-                count_group_b[socket_2] += 1
-            threading.Thread(target=mas_2, args=(socket_2, count_group_b)).start()
+            for socket_2 in count_group_b:
+                while self.is_receive_message:
+                    mas_2 = socket_2.recv(1024)
+                    count_group_b[socket_2] += 1
+                threading.Thread(target=mas_2, args=(socket_2, count_group_b)).start()
+        except:
+            print("can't recive massage")
         sleep(10)
         self.is_receive_message = False
 
@@ -67,7 +73,7 @@ class Server:
     #get teams name from client
     def get_name_of_team(self,client_socket,client_address):
         try:
-            name =c_address.recv(1024).decode('utf-8')
+            name =client_address.recv(1024).decode('utf-8')
             self.clients.append((client_socket,client_address,name))   
         except:
             print("cant get the team")   
@@ -137,9 +143,12 @@ class Server:
         if(len(self.clients)!= 2) :
             print(Fore.YELLOW+"There is no two groups of players")
             #remove existing clients
-            for i in self.clients:
-                i[0].shutdown(socket.SHUT_RDWR)
-                i[0].close()
+            try:
+                for i in self.clients:
+                    i[0].shutdown(socket.SHUT_RDWR)
+                    i[0].close()
+            except:
+                print("client is still connected ")
             self.clients=[]
         
         group_a, group_b=self.initialize_game()
@@ -173,8 +182,8 @@ class Server:
         print()
 
         ##end game
-        sum_points_a = sum(points_a.values())
-        sum_points_b = sum(points_b.values())
+        sum_points_a = sum(count_group_a.values())
+        sum_points_b = sum(count_group_b.values())
         message=self.end_game(sum_points_a,sum_points_b)
 
         if sum_points_a > sum_points_b:
@@ -186,9 +195,12 @@ class Server:
         print(message)
 
         #remove existing clients
-        for i in self.clients:
-            i[0].shutdown(socket.SHUT_RDWR)
-            i[0].close()
+        try:
+            for i in self.clients:
+                i[0].shutdown(socket.SHUT_RDWR)
+                i[0].close()
+        except:
+            print("client is still connected ")
         self.clients=[]
 
 
