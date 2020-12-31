@@ -51,7 +51,7 @@ class Server:
             while self.is_receive_message:
                 mas_2 = socket_2.recv(1024)
                 count_group_b[socket_2] += 1
-            threading.Thread(target=mas, args=(socket_2, count_group_b)).start()
+            threading.Thread(target=mas_2, args=(socket_2, count_group_b)).start()
         sleep(10)
         self.is_receive_message = False
 
@@ -112,8 +112,8 @@ class Server:
 
     #create message for the winner and looser
     def end_game(self, points_a, points_b):
-        message= Fore.CYAN+'Game over!\nGroup 1 typed in {} characters. Group 2 typed in {} characters.\n'.format(sum_points_a, sum_points_b)
-        if sum_points_a > sum_points_b:
+        message= Fore.CYAN+'Game over!\nGroup 1 typed in {} characters. Group 2 typed in {} characters.\n'.format(points_a, points_b)
+        if points_a > points_b:
             message += Fore.BLUE+'Group 1 wins!\n\n'
         else:
             message += Fore.MAGENTA+'Group 2 wins!\n\n'
@@ -124,36 +124,41 @@ class Server:
     #initialize 
     def insert_to_groups(self,group,char):
         #initialize groups points
-        pointes=0
         group_initialize=self.initialize_game()
         if char=='a':
-            print("group_a: ".format(group_initialize))
+            print("group_a: {}".format(group_initialize))
         elif char == 'b':
-            print("group_b: ".format(group_initialize))
-
-        count_group = {}      
-        for i in group:
-            count_group[i] = 0
+            print("group_b: {}".format(group_initialize))
+        return group_initialize
 
     #create game - main
     def create_game(self):
         #invalid num of players
         if(len(self.clients)!= 2) :
-            print(Style.YELLOW+"There is no two groups of players")
+            print(Fore.YELLOW+"There is no two groups of players")
             #remove existing clients
             for i in self.clients:
                 i[0].shutdown(socket.SHUT_RDWR)
                 i[0].close()
             self.clients=[]
         
+        group_a, group_b=self.initialize_game()
+        
+        group_a_sum=self.insert_to_groups(group_a,'a')
+        group_b_sum=self.insert_to_groups(group_b,'b')
 
-        insert_to_groups(self,group_a):
-        insert_to_groups(self,group_b):
+        count_group_a = {}      
+        for i in group_a_sum:
+            count_group_a[i] = 0
 
-        server_run=thread.Thread(target=self.get_message_from_TCP,args=(count_group_a,count_group_b))
+        count_group_b = {}      
+        for i in group_b_sum:
+            count_group_b[i] = 0
+
+        server_run=threading.Thread(target=self.get_message_from_TCP,args=(count_group_a,count_group_b))
         server_run.start()
 
-        start_game_message=self.start_game(group_a,group_b)
+        start_game_message=self.start_game(count_group_a,count_group_b)
         
         #send message to client
         for client in self.clients:
