@@ -18,8 +18,6 @@ class Server:
 
     def __init__(self,team_name1):
         self.team_name=team_name1
-        self.udp_is_sending_message=False
-        self.is_receive_message=False
         self.clients =[]
         self.socket_UDP = socket.socket(socket.AF_INET,socket.SOCK_DGRAM)
         self.socket_UDP.setsockopt(socket.SOL_SOCKET,socket.SO_BROADCAST,1)
@@ -32,18 +30,15 @@ class Server:
     #send message from udp
     def send_message_from_UDP(self):
         print(Style.RESET_ALL+"Server started, listening on IP address",self.IP)
-        self.udp_is_sending_message=True
         try:
             for i in range(10):
                 self.socket_UDP.sendto(struct.pack('IbH', self.MAGIC_COOKIE, self.TYPE, self.server_port), ('<broadcast>', self.UDP_PORT))
                 sleep(1)
         except:
             print("cant connect to UDP")
-        self.udp_is_sending_message=False
 
     #recieve message from tcp
     def get_message_from_TCP(self, count_group_a,count_group_b):
-        self.is_receive_message = True
         try:
             for socket_1 in count_group_a:
                 while self.is_receive_message:
@@ -59,7 +54,6 @@ class Server:
         except:
             print("can't recive massage")
         sleep(10)
-        self.is_receive_message = False
 
     def to_connect(self):
         try:
@@ -163,9 +157,12 @@ class Server:
         count_group_b = {}      
         for i in group_b_sum:
             count_group_b[i] = 0
+        try:
+            server_run=threading.Thread(target=self.get_message_from_TCP,args=(count_group_a,count_group_b))
+            server_run.start()
+        except:
+            print("threads not working")
 
-        server_run=threading.Thread(target=self.get_message_from_TCP,args=(count_group_a,count_group_b))
-        server_run.start()
 
         start_game_message=self.start_game(count_group_a,count_group_b)
         
